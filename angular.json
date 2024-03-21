@@ -3,5 +3,38 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
+    "npx-responsive-material-components": {
+      "projectType": "library",
+      "root": "projects/npx-responsive-material-components",
+      "sourceRoot": "projects/npx-responsive-material-components/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/npx-responsive-material-components/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/npx-responsive-material-components/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/npx-responsive-material-components/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/npx-responsive-material-components/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
+    }
   }
 }
