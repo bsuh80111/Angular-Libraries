@@ -16,8 +16,8 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "paths": {
-      "npx-responsive-material-components": [
-        "dist/npx-responsive-material-components"
+      "ngx-responsive-material-components": [
+        "dist/ngx-responsive-material-components"
       ]
     },
     "importHelpers": true,

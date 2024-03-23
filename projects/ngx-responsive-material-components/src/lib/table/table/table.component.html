@@ -1,0 +1,38 @@
+<ng-container [ngSwitch]="tableType">
+
+  <!-- Native HTML Table -->
+  <ng-container *ngSwitchCase="'native'">
+    <table mat-table>
+
+    </table>
+  </ng-container>
+
+  <!-- Flex Table -->
+  <ng-container *ngSwitchDefault>
+    <mat-table [dataSource]="data">
+
+      <ng-container *ngFor="let col of tableColumns" [matColumnDef]="col.key">
+        <mat-header-cell *matHeaderCellDef>
+          {{ col.header }}
+        </mat-header-cell>
+
+        <mat-cell *matCellDef="let row">
+          <!-- Custom column data cell template if provided -->
+          <ng-container [ngTemplateOutlet]="columnTemplates[col.key] || noTemplate"
+            [ngTemplateOutletContext]="{ $implicit:row }">
+          </ng-container>
+
+          <!-- Default to row data property if not custom template provided -->
+          <ng-template #noTemplate>
+            {{ row[col.key] }}
+          </ng-template>
+
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
+      <mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></mat-row>
+    </mat-table>
+  </ng-container>
+
+</ng-container>
