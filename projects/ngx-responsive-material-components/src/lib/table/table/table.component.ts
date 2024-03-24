@@ -1,21 +1,43 @@
-import { AfterContentInit, Component, ContentChildren, Input, OnChanges, OnDestroy, QueryList, SimpleChanges, TemplateRef } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, ContentChildren, Input, OnChanges, OnDestroy, QueryList, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { TableColumn, TableType } from '../table.model';
 import { TableColumnDirective } from '../table-column/table-column.directive';
 import { Subject, takeUntil } from 'rxjs';
+import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
   selector: 'responsive-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css']
 })
-export class TableComponent implements AfterContentInit, OnChanges, OnDestroy {
+export class TableComponent<T> implements AfterContentInit, AfterViewInit, OnChanges, OnDestroy {
 
-  @Input({ required: true }) data!: unknown[];
+  /** Key that uniquely identifies the table */
+  @Input({ required: true }) key!: string;
+
+  /** Input data to build table with */
+  @Input({ required: true }) data!: T[];
+
+  /** Table column configurations */
   @Input({ required: true }) tableColumns!: TableColumn[];
+
+  /** Type of table to render. Either native-HTML-table-based or flexbox-based */
   @Input() tableType: TableType = 'flex';
+
+  /** Paginator page size configuration. If not provided, no pagination will occur */
+  @Input() pageSizeOptions?: number[];
+
   @ContentChildren(TableColumnDirective) tableColumnTemplates!: QueryList<TableColumnDirective>;
-  columnsToDisplay: string[] = [];
+  @ViewChild(MatPaginator) paginator?: MatPaginator;
+  tableDataSource!: MatTableDataSource<T>; // Guaranteed to exist since data is a required input property (See ngOnChanges)
+  get columnsToDisplay(): string[] {
+    return this.tableColumns.reduce((acc: string[], tableColumn: TableColumn) => {
+      if (tableColumn.visible === true || tableColumn.visible === undefined) {
+        acc.push(tableColumn.key);
+      }
+      return acc;
+    }, []);
+  };
   columnTemplates: Record<string, TemplateRef<any> | null> = {};
   private readonly destroy$ = new Subject<void>();
 
@@ -26,12 +48,17 @@ export class TableComponent implements AfterContentInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']?.currentValue) {
-      // Init MatTableDataSource
+      this.tableDataSource = new MatTableDataSource(this.data);
     }
 
-    if (changes['tableColumns']?.currentValue) {
-      this.columnsToDisplay = this.tableColumns.map(tc => tc.key);
+    // In case the paginator's rendering is impacted, attempt to reattach paginator to datasource
+    if (changes['pageSizeOptions']) {
+      this.setTableDataSourcePaginator();
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.setTableDataSourcePaginator();
   }
 
   ngAfterContentInit(): void {
@@ -48,5 +75,17 @@ export class TableComponent implements AfterContentInit, OnChanges, OnDestroy {
     });
 
     this.tableColumnTemplates.notifyOnChanges(); // Manual trigger since first query doesn't trigger the changes observable
+  }
+
+  private setTableDataSourcePaginator() {
+    if (!this.paginator) {
+      return;
+    }
+
+    if (this.pageSizeOptions && this.pageSizeOptions.length > 0) {
+      this.tableDataSource.paginator = this.paginator;
+    } else {
+      this.tableDataSource.paginator = null;
+    }
   }
 }

@@ -2,14 +2,35 @@
 
   <!-- Native HTML Table -->
   <ng-container *ngSwitchCase="'native'">
-    <table mat-table>
+    <table mat-table [dataSource]="tableDataSource">
 
+      <ng-container *ngFor="let col of tableColumns" [matColumnDef]="col.key">
+        <th mat-header-cell *matHeaderCellDef>
+          {{ col.header }}
+        </th>
+
+        <td mat-cell *matCellDef="let row">
+          <!-- Custom column data cell template if provided -->
+          <ng-container [ngTemplateOutlet]="columnTemplates[col.key] || noTemplate"
+            [ngTemplateOutletContext]="{ $implicit:row }">
+          </ng-container>
+
+          <!-- Default to row data property if not custom template provided -->
+          <ng-template #noTemplate>
+            {{ row[col.key] }}
+          </ng-template>
+
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+      <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
     </table>
   </ng-container>
 
   <!-- Flex Table -->
   <ng-container *ngSwitchDefault>
-    <mat-table [dataSource]="data">
+    <mat-table [dataSource]="tableDataSource">
 
       <ng-container *ngFor="let col of tableColumns" [matColumnDef]="col.key">
         <mat-header-cell *matHeaderCellDef>
@@ -36,3 +57,10 @@
   </ng-container>
 
 </ng-container>
+
+<!-- Paginator -->
+<mat-paginator
+  [style.display]="pageSizeOptions && pageSizeOptions.length > 0 ? 'initial' : 'none'"
+  [pageSizeOptions]="pageSizeOptions ?? []"
+  showFirstLastButtons
+></mat-paginator>

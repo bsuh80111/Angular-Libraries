@@ -1,0 +1,7 @@
+table .mat-mdc-row:nth-child(odd), mat-table .mat-mdc-row:nth-child(odd) {
+  background-color: #FFF;
+}
+
+table .mat-mdc-row:nth-child(even), mat-table .mat-mdc-row:nth-child(even) {
+  background-color: #FAFAFA;
+}
