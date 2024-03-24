@@ -1,7 +1,21 @@
-table .mat-mdc-row:nth-child(odd), mat-table .mat-mdc-row:nth-child(odd) {
+table .mat-mdc-row:nth-child(odd), mat-table .mat-mdc-row:nth-child(odd), .expansion-panel-data:nth-of-type(odd) {
   background-color: #FFF;
 }
 
-table .mat-mdc-row:nth-child(even), mat-table .mat-mdc-row:nth-child(even) {
+table .mat-mdc-row:nth-child(even), mat-table .mat-mdc-row:nth-child(even), .expansion-panel-data:nth-of-type(even) {
   background-color: #FAFAFA;
+}
+
+.expansion-panel-data {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px;
+
+  .column-label {
+    font-weight: bold;
+    margin: 0;
+    max-width: 40%;
+  }
 }

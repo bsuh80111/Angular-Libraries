@@ -1,62 +1,96 @@
-<ng-container [ngSwitch]="tableType">
+<ng-container *ngIf="!screenSizeService.isMobile; else mobile;">
+  <ng-container [ngSwitch]="tableType">
 
-  <!-- Native HTML Table -->
-  <ng-container *ngSwitchCase="'native'">
-    <table mat-table [dataSource]="tableDataSource">
+    <!-- Native HTML Table -->
+    <ng-container *ngSwitchCase="'native'">
+      <table mat-table [dataSource]="tableDataSource">
 
-      <ng-container *ngFor="let col of tableColumns" [matColumnDef]="col.key">
-        <th mat-header-cell *matHeaderCellDef>
-          {{ col.header }}
-        </th>
+        <ng-container *ngFor="let col of tableColumns" [matColumnDef]="col.key">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ col.header }}
+          </th>
 
-        <td mat-cell *matCellDef="let row">
-          <!-- Custom column data cell template if provided -->
-          <ng-container [ngTemplateOutlet]="columnTemplates[col.key] || noTemplate"
-            [ngTemplateOutletContext]="{ $implicit:row }">
-          </ng-container>
+          <td mat-cell *matCellDef="let row">
+            <!-- Custom column data cell template if provided -->
+            <ng-container [ngTemplateOutlet]="columnTemplates[col.key] || noTemplateNativeTable"
+              [ngTemplateOutletContext]="{ $implicit:row }">
+            </ng-container>
 
-          <!-- Default to row data property if not custom template provided -->
-          <ng-template #noTemplate>
-            {{ row[col.key] }}
-          </ng-template>
+            <!-- Default to row data property if no custom template provided -->
+            <ng-template #noTemplateNativeTable>
+              {{ row[col.key] }}
+            </ng-template>
 
-        </td>
-      </ng-container>
+          </td>
+        </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
-      <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
-    </table>
+        <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+        <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
+      </table>
+    </ng-container>
+
+    <!-- Flex Table -->
+    <ng-container *ngSwitchDefault>
+      <mat-table [dataSource]="tableDataSource">
+
+        <ng-container *ngFor="let col of tableColumns" [matColumnDef]="col.key">
+          <mat-header-cell *matHeaderCellDef>
+            {{ col.header }}
+          </mat-header-cell>
+
+          <mat-cell *matCellDef="let row">
+            <!-- Custom column data cell template if provided -->
+            <ng-container [ngTemplateOutlet]="columnTemplates[col.key] || noTemplateFlexTable"
+              [ngTemplateOutletContext]="{ $implicit:row }">
+            </ng-container>
+
+            <!-- Default to row data property if no custom template provided -->
+            <ng-template #noTemplateFlexTable>
+              {{ row[col.key] }}
+            </ng-template>
+
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
+        <mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></mat-row>
+      </mat-table>
+    </ng-container>
+
   </ng-container>
-
-  <!-- Flex Table -->
-  <ng-container *ngSwitchDefault>
-    <mat-table [dataSource]="tableDataSource">
-
-      <ng-container *ngFor="let col of tableColumns" [matColumnDef]="col.key">
-        <mat-header-cell *matHeaderCellDef>
-          {{ col.header }}
-        </mat-header-cell>
-
-        <mat-cell *matCellDef="let row">
-          <!-- Custom column data cell template if provided -->
-          <ng-container [ngTemplateOutlet]="columnTemplates[col.key] || noTemplate"
-            [ngTemplateOutletContext]="{ $implicit:row }">
-          </ng-container>
-
-          <!-- Default to row data property if not custom template provided -->
-          <ng-template #noTemplate>
-            {{ row[col.key] }}
-          </ng-template>
-
-        </mat-cell>
-      </ng-container>
-
-      <mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
-      <mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></mat-row>
-    </mat-table>
-  </ng-container>
-
 </ng-container>
+
+<!-- Mobile -->
+<ng-template #mobile>
+  <mat-accordion multi="true">
+    <ng-container *ngFor="let obj of tableDataSource.connect() | async">
+      <mat-expansion-panel>
+        <!-- Expansion Panel Header -->
+        <mat-expansion-panel-header>
+          <ng-container [ngTemplateOutlet]="columnTemplates[columnsToDisplay[0]] || noTemplateExpansionHeader"
+            [ngTemplateOutletContext]="{ $implicit:obj }">
+          </ng-container>
+          <ng-template #noTemplateExpansionHeader>
+            {{ obj[columnsToDisplay[0]] }}
+          </ng-template>
+        </mat-expansion-panel-header>
+
+        <!-- Expansion Panel Content -->
+        <ng-container *ngFor="let key of columnsToDisplay.slice(1)">
+          <div class="expansion-panel-data">
+            <p class="column-label">{{ getTableColumnHeaderByKey(key) }}</p>
+            <ng-container [ngTemplateOutlet]="columnTemplates[key] || noTemplateExpansionContent"
+              [ngTemplateOutletContext]="{ $implicit:obj }">
+            </ng-container>
+            <ng-template #noTemplateExpansionContent>
+              {{ obj[key] }}
+            </ng-template>
+          </div>
+        </ng-container>
+      </mat-expansion-panel>
+    </ng-container>
+  </mat-accordion>
+</ng-template>
 
 <!-- Paginator -->
 <mat-paginator

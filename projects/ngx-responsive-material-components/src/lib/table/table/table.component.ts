@@ -1,16 +1,17 @@
-import { AfterContentInit, AfterViewInit, Component, ContentChildren, Input, OnChanges, OnDestroy, QueryList, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, ContentChildren, Input, OnChanges, OnDestroy, QueryList, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { TableColumn, TableType } from '../table.model';
 import { TableColumnDirective } from '../table-column/table-column.directive';
 import { Subject, takeUntil } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
+import { ScreenSizeService } from '../../screen-size';
 
 @Component({
   selector: 'responsive-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css']
 })
-export class TableComponent<T> implements AfterContentInit, AfterViewInit, OnChanges, OnDestroy {
+export class TableComponent<T extends Record<string, unknown>> implements AfterContentInit, AfterViewInit, OnChanges, OnDestroy {
 
   /** Key that uniquely identifies the table */
   @Input({ required: true }) key!: string;
@@ -40,6 +41,11 @@ export class TableComponent<T> implements AfterContentInit, AfterViewInit, OnCha
   };
   columnTemplates: Record<string, TemplateRef<any> | null> = {};
   private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    protected screenSizeService: ScreenSizeService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -84,8 +90,13 @@ export class TableComponent<T> implements AfterContentInit, AfterViewInit, OnCha
 
     if (this.pageSizeOptions && this.pageSizeOptions.length > 0) {
       this.tableDataSource.paginator = this.paginator;
+      this.cdr.detectChanges(); // Required since paginator can alter emitted data from datasource
     } else {
       this.tableDataSource.paginator = null;
     }
+  }
+
+  protected getTableColumnHeaderByKey(key: string): string | undefined {
+    return this.tableColumns.find((tc) => tc.key === key)?.header;
   }
 }
