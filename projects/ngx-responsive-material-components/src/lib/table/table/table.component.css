@@ -6,6 +6,12 @@ table .mat-mdc-row:nth-child(even), mat-table .mat-mdc-row:nth-child(even), .exp
   background-color: #FAFAFA;
 }
 
+table, mat-table {
+  p {
+    margin: 0;
+  }
+}
+
 .expansion-panel-data {
   display: flex;
   align-items: flex-start;

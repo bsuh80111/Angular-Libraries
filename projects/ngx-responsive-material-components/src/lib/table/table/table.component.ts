@@ -2,16 +2,17 @@ import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, ContentC
 import { MatTableDataSource } from '@angular/material/table';
 import { TableColumn, TableType } from '../table.model';
 import { TableColumnDirective } from '../table-column/table-column.directive';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 import { ScreenSizeService } from '../../screen-size';
+import { SearchService } from '../../search';
 
 @Component({
   selector: 'responsive-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css']
 })
-export class TableComponent<T extends Record<string, unknown>> implements AfterContentInit, AfterViewInit, OnChanges, OnDestroy {
+export class TableComponent<T extends Record<string, any>> implements AfterContentInit, AfterViewInit, OnChanges, OnDestroy {
 
   /** Key that uniquely identifies the table */
   @Input({ required: true }) key!: string;
@@ -24,6 +25,9 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
 
   /** Type of table to render. Either native-HTML-table-based or flexbox-based */
   @Input() tableType: TableType = 'flex';
+
+  /** Search string to filter table data */
+  @Input() searchString?: string;
 
   /** Paginator page size configuration. If not provided, no pagination will occur */
   @Input() pageSizeOptions?: number[];
@@ -42,10 +46,15 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
   columnTemplates: Record<string, TemplateRef<any> | null> = {};
   private readonly destroy$ = new Subject<void>();
 
+  searchStringSubject: Subject<string> = new Subject();
+
   constructor(
     protected screenSizeService: ScreenSizeService,
+    protected searchService: SearchService,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {
+    this.initializeSearch();
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -54,13 +63,17 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']?.currentValue) {
-      this.tableDataSource = new MatTableDataSource(this.data);
-      this.setTableDataSourcePaginator();
+      this.tableDataSource.data = this.data;
+      this.cdr.detectChanges();
     }
 
     // In case the paginator's rendering is impacted, attempt to reattach paginator to datasource
     if (changes['pageSizeOptions']) {
       this.setTableDataSourcePaginator();
+    }
+
+    if (changes['searchString']) {
+      this.searchStringSubject.next(this.searchString ?? '');
     }
   }
 
@@ -82,6 +95,35 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
     });
 
     this.tableColumnTemplates.notifyOnChanges(); // Manual trigger since first query doesn't trigger the changes observable
+  }
+
+  private initializeSearch() {
+    // Debounce search and apply search filter
+    this.searchStringSubject.pipe(
+      debounceTime(250),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (searchString: string) => {
+        this.tableDataSource.filter = searchString;
+        return searchString;
+      }
+    });
+
+    // Initialize table data filtering with support for special characters and diacritics
+    this.tableDataSource.filterPredicate = (data: T, filter: string): boolean => {
+      let dataString = '';
+
+      for (const tc of this.tableColumns) {
+        // Table column will not be searchable if marked unsearchable or if a custom template is provided (since we can't guarantee that the key exists in the data object)
+        if (tc.searchable === false || tc.visible === false || this.columnTemplates[tc.key]) {
+          continue;
+        }
+
+        dataString += data[tc.key];
+      }
+
+      return this.searchService.matchExists(dataString, filter);
+    };
   }
 
   private setTableDataSourcePaginator() {

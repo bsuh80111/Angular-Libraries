@@ -5,4 +5,5 @@ export interface TableColumn {
   header: string;
   sortable?: boolean;
   visible?: boolean;
+  searchable?: boolean;
 }

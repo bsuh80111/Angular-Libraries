@@ -5,3 +5,4 @@
 export * from './lib/responsive-material.module';
 export * from './lib/responsive-material.service';
 export * from './lib/table';
+export * from './lib/search';

@@ -18,7 +18,7 @@
 
             <!-- Default to row data property if no custom template provided -->
             <ng-template #noTemplateNativeTable>
-              {{ row[col.key] }}
+              <p [innerHTML]="row[col.key] | highlightSearch : searchString"></p>
             </ng-template>
 
           </td>
@@ -46,7 +46,7 @@
 
             <!-- Default to row data property if no custom template provided -->
             <ng-template #noTemplateFlexTable>
-              {{ row[col.key] }}
+              <p [innerHTML]="row[col.key] | highlightSearch : searchString"></p>
             </ng-template>
 
           </mat-cell>
@@ -71,7 +71,7 @@
             [ngTemplateOutletContext]="{ $implicit:obj }">
           </ng-container>
           <ng-template #noTemplateExpansionHeader>
-            {{ obj[columnsToDisplay[0]] }}
+            <p [innerHTML]="obj[columnsToDisplay[0]] | highlightSearch : searchString"></p>
           </ng-template>
         </mat-expansion-panel-header>
 
@@ -83,7 +83,7 @@
               [ngTemplateOutletContext]="{ $implicit:obj }">
             </ng-container>
             <ng-template #noTemplateExpansionContent>
-              {{ obj[key] }}
+              <p [innerHTML]="obj[key] | highlightSearch : searchString"></p>
             </ng-template>
           </div>
         </ng-container>
