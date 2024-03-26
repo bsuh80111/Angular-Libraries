@@ -30,7 +30,7 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
 
   @ContentChildren(TableColumnDirective) tableColumnTemplates!: QueryList<TableColumnDirective>;
   @ViewChild(MatPaginator) paginator?: MatPaginator;
-  tableDataSource!: MatTableDataSource<T>; // Guaranteed to exist since data is a required input property (See ngOnChanges)
+  tableDataSource: MatTableDataSource<T> = new MatTableDataSource<T>([]); // Guaranteed to exist since data is a required input property (See ngOnChanges)
   get columnsToDisplay(): string[] {
     return this.tableColumns.reduce((acc: string[], tableColumn: TableColumn) => {
       if (tableColumn.visible === true || tableColumn.visible === undefined) {
@@ -55,6 +55,7 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']?.currentValue) {
       this.tableDataSource = new MatTableDataSource(this.data);
+      this.setTableDataSourcePaginator();
     }
 
     // In case the paginator's rendering is impacted, attempt to reattach paginator to datasource
