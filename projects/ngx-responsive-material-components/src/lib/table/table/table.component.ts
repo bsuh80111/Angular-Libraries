@@ -8,6 +8,7 @@ import { ScreenSizeService } from '../../screen-size';
 import { SearchService } from '../../search';
 
 const OPTIONS_COLUMN_KEY = 'options';
+const DATA_STRING_SEPARATOR = '!@#';
 
 @Component({
   selector: 'responsive-table',
@@ -136,6 +137,7 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
         }
 
         dataString += data[tc.key];
+        dataString += DATA_STRING_SEPARATOR;
       }
 
       return this.searchService.matchExists(dataString, filter);

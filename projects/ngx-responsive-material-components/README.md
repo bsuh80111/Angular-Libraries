@@ -1,24 +1,37 @@
-# NgxResponsiveMaterialComponents
+# Responsive Angular Material Components
 
-This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.0.
+The purpose of this library is to reduce the amount of boilerplate code needed when using multiple Angular components together. Additionally, provides full responsive behavior through the use of different material components.
 
-## Code scaffolding
+## Installation
 
-Run `ng generate component component-name --project ngx-responsive-material-components` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module --project ngx-responsive-material-components`.
-> Note: Don't forget to add `--project ngx-responsive-material-components` or else it will be added to the default project in your `angular.json` file. 
+Run `npm i ngx-responsive-material-components` to install the library.
 
-## Build
+## Setup
 
-Run `ng build ngx-responsive-material-components` to build the project. The build artifacts will be stored in the `dist/` directory.
+The following modules are available for import into your Angular project(s):
 
-## Publishing
+- **ResponsiveMaterialModule**: Includes all other modules, components and directives available in the library
+- **TableModule**: Includes only table related components and directives.
+- **SearchModule**: Includes only search related components and directives.
 
-After building your library with `ng build ngx-responsive-material-components`, go to the dist folder `cd dist/ngx-responsive-material-components` and run `npm publish`.
+```
+import { ResponsiveMaterialModule } from 'ngx-responsive-material-components';
 
-## Running unit tests
-
-Run `ng test ngx-responsive-material-components` to execute the unit tests via [Karma](https://karma-runner.github.io).
+@NgModule({
+  declarations: [
+    ... 
+  ],
+  imports: [
+    ...
+    ResponsiveMaterialModule
+  ],
+  exports: [
+    ...
+  ]
+})
+export class YourModule { }
+```
 
 ## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+For questions/requests, please post an issue on the [Github repository](https://github.com/bsuh80111/Angular-Libraries/issues).
