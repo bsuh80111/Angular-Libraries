@@ -25,3 +25,16 @@ table, mat-table {
     max-width: 40%;
   }
 }
+
+table {
+  .row-options {
+    width: 48px;
+  }
+}
+
+mat-table {
+  .row-options {
+    flex: 0 0 48px;
+    box-sizing: content-box;
+  }
+}

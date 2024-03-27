@@ -12,8 +12,9 @@ export class HighlightSearchPipe implements PipeTransform {
     private searchService: SearchService
   ) { }
 
-  transform(value: string, searchString?: string): SafeValue {
-    console.log(value, searchString);
+  transform(input: unknown, searchString?: string): SafeValue {
+    let value: string = String(input);
+
     if (value === null || !searchString) {
       return value;
     }

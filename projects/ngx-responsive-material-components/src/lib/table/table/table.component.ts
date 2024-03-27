@@ -1,18 +1,20 @@
-import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, ContentChildren, Input, OnChanges, OnDestroy, QueryList, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, ContentChildren, EventEmitter, Input, OnChanges, OnDestroy, Output, QueryList, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { TableColumn, TableType } from '../table.model';
+import { RowOptionSelectedEvent, TableColumn, TableType } from '../table.model';
 import { TableColumnDirective } from '../table-column/table-column.directive';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 import { ScreenSizeService } from '../../screen-size';
 import { SearchService } from '../../search';
 
+const OPTIONS_COLUMN_KEY = 'options';
+
 @Component({
   selector: 'responsive-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css']
 })
-export class TableComponent<T extends Record<string, any>> implements AfterContentInit, AfterViewInit, OnChanges, OnDestroy {
+export class TableComponent<T extends Record<string, unknown>> implements AfterContentInit, AfterViewInit, OnChanges, OnDestroy {
 
   /** Key that uniquely identifies the table */
   @Input({ required: true }) key!: string;
@@ -32,16 +34,27 @@ export class TableComponent<T extends Record<string, any>> implements AfterConte
   /** Paginator page size configuration. If not provided, no pagination will occur */
   @Input() pageSizeOptions?: number[];
 
+  /** List of options to generate for each table row */
+  @Input() rowOptions: string[] = [];
+
+  /** Emits when user selects an option */
+  @Output() rowOptionSelected: EventEmitter<RowOptionSelectedEvent<T>> = new EventEmitter();
+
   @ContentChildren(TableColumnDirective) tableColumnTemplates!: QueryList<TableColumnDirective>;
   @ViewChild(MatPaginator) paginator?: MatPaginator;
-  tableDataSource: MatTableDataSource<T> = new MatTableDataSource<T>([]); // Guaranteed to exist since data is a required input property (See ngOnChanges)
+  tableDataSource: MatTableDataSource<T> = new MatTableDataSource<T>([]);
   get columnsToDisplay(): string[] {
-    return this.tableColumns.reduce((acc: string[], tableColumn: TableColumn) => {
+    const columns = this.tableColumns.reduce((acc: string[], tableColumn: TableColumn) => {
       if (tableColumn.visible === true || tableColumn.visible === undefined) {
         acc.push(tableColumn.key);
       }
       return acc;
     }, []);
+    if (this.rowOptions.length > 0) {
+      columns.push(OPTIONS_COLUMN_KEY);
+    }
+
+    return columns;
   };
   columnTemplates: Record<string, TemplateRef<any> | null> = {};
   private readonly destroy$ = new Subject<void>();
@@ -141,5 +154,12 @@ export class TableComponent<T extends Record<string, any>> implements AfterConte
 
   protected getTableColumnHeaderByKey(key: string): string | undefined {
     return this.tableColumns.find((tc) => tc.key === key)?.header;
+  }
+  
+  protected _rowOptionSelected(option: string, rowData: T) {
+    this.rowOptionSelected.emit({
+      option,
+      rowData
+    });
   }
 }

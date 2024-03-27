@@ -6,6 +6,9 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 import { TableColumnDirective } from './table-column/table-column.directive';
 import { SearchModule } from '../search/search.module';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
   declarations: [
@@ -14,7 +17,10 @@ import { SearchModule } from '../search/search.module';
   ],
   imports: [
     CommonModule,
+    MatButtonModule,
     MatExpansionModule,
+    MatIconModule,
+    MatMenuModule,
     MatPaginatorModule,
     MatTableModule,
     SearchModule
