@@ -44,18 +44,21 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   tableDataSource: MatTableDataSource<T> = new MatTableDataSource<T>([]);
   get columnsToDisplay(): string[] {
-    const columns = this.tableColumns.reduce((acc: string[], tableColumn: TableColumn) => {
+    return this.tableColumns.reduce((acc: string[], tableColumn: TableColumn) => {
       if (tableColumn.visible === true || tableColumn.visible === undefined) {
         acc.push(tableColumn.key);
       }
       return acc;
     }, []);
+  };
+  get tableColumnsToDisplay(): string[] {
+    const columns = this.columnsToDisplay;
     if (this.rowOptions.length > 0) {
       columns.push(OPTIONS_COLUMN_KEY);
     }
 
     return columns;
-  };
+  }
   columnTemplates: Record<string, TemplateRef<any> | null> = {};
   private readonly destroy$ = new Subject<void>();
 

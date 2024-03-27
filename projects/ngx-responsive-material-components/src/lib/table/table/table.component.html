@@ -46,8 +46,8 @@
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
-        <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
+        <tr mat-header-row *matHeaderRowDef="tableColumnsToDisplay"></tr>
+        <tr mat-row *matRowDef="let myRowData; columns: tableColumnsToDisplay"></tr>
       </table>
     </ng-container>
 
@@ -95,8 +95,8 @@
           </mat-cell>
         </ng-container>
 
-        <mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
-        <mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></mat-row>
+        <mat-header-row *matHeaderRowDef="tableColumnsToDisplay"></mat-header-row>
+        <mat-row *matRowDef="let myRowData; columns: tableColumnsToDisplay"></mat-row>
       </mat-table>
     </ng-container>
 
@@ -130,6 +130,24 @@
             </ng-template>
           </div>
         </ng-container>
+
+        <!-- Expansion Panel Actions -->
+        <mat-action-row *ngIf="rowOptions.length > 0">
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="expansionOptionsMenu"
+          >
+            <mat-icon>more_vert</mat-icon>
+          </button>
+
+          <mat-menu #expansionOptionsMenu="matMenu">
+            <button
+              mat-menu-item
+              *ngFor="let option of rowOptions"
+              (click)="_rowOptionSelected(option, obj)"
+            >{{ option }}</button>
+          </mat-menu>
+        </mat-action-row>
       </mat-expansion-panel>
     </ng-container>
   </mat-accordion>
