@@ -24,7 +24,7 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
   @Input({ required: true }) data!: T[];
 
   /** Table column configurations */
-  @Input({ required: true }) tableColumns!: TableColumn[];
+  @Input({ required: true }) tableColumns!: TableColumn<T>[];
 
   /** Type of table to render. Either native-HTML-table-based or flexbox-based */
   @Input() tableType: TableType = 'flex';
@@ -45,7 +45,7 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   tableDataSource: MatTableDataSource<T> = new MatTableDataSource<T>([]);
   get columnsToDisplay(): string[] {
-    return this.tableColumns.reduce((acc: string[], tableColumn: TableColumn) => {
+    return this.tableColumns.reduce((acc: string[], tableColumn: TableColumn<T>) => {
       if (tableColumn.visible === true || tableColumn.visible === undefined) {
         acc.push(tableColumn.key);
       }
@@ -132,12 +132,17 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
 
       for (const tc of this.tableColumns) {
         // Table column will not be searchable if marked unsearchable or if a custom template is provided (since we can't guarantee that the key exists in the data object)
-        if (tc.searchable === false || tc.visible === false || this.columnTemplates[tc.key]) {
+        if (tc.searchable === false || tc.visible === false) {
           continue;
         }
 
-        dataString += data[tc.key];
-        dataString += DATA_STRING_SEPARATOR;
+        if (tc.customDataGenerator) {
+          dataString += tc.customDataGenerator(data);
+          dataString += DATA_STRING_SEPARATOR;
+        } else {
+          dataString += data[tc.key] ?? '';
+          dataString += DATA_STRING_SEPARATOR;
+        }
       }
 
       return this.searchService.matchExists(dataString, filter);
@@ -157,10 +162,24 @@ export class TableComponent<T extends Record<string, unknown>> implements AfterC
     }
   }
 
-  protected getTableColumnHeaderByKey(key: string): string | undefined {
-    return this.tableColumns.find((tc) => tc.key === key)?.header;
+  protected getTableColumnByKey(key: string): TableColumn<T> | undefined {
+    return this.tableColumns.find((tc) => tc.key === key);
   }
-  
+
+  protected getTableColumnCssClasses(col: TableColumn<T>, rowData: T): string[] {
+    if (!col.deepCssClasses && !col.deepCssClassGenerator) {
+      return [];
+    }
+
+    const classes: string[] = [];
+    if (col.deepCssClasses)
+      classes.push(...col.deepCssClasses);
+    if (col.deepCssClassGenerator)
+      classes.push(...col.deepCssClassGenerator(rowData) ?? []);
+
+    return classes;
+  }
+
   protected _rowOptionSelected(option: string, rowData: T) {
     this.rowOptionSelected.emit({
       option,

@@ -10,8 +10,6 @@ mat-table .mat-mdc-row:nth-child(even),
   background-color: #FAFAFA;
 }
 
-table,
-mat-table,
 mat-expansion-panel-header {
   p {
     margin: 0;

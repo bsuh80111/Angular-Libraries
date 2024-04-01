@@ -16,9 +16,12 @@
               [ngTemplateOutletContext]="{ $implicit: row }">
             </ng-container>
 
-            <!-- Default to row data property if no custom template provided -->
+            <!-- No custom template provided -->
             <ng-template #noTemplateNativeTable>
-              <p [innerHTML]="row[col.key] ?? '' | highlightSearch : searchString"></p>
+              <div
+                [innerHTML]="(col.customDataGenerator ? col.customDataGenerator(row) : row[col.key]) ?? '' | highlightSearch : searchString"
+                [ngClass]="getTableColumnCssClasses(col, row)"
+              ></div>
             </ng-template>
 
           </td>
@@ -66,9 +69,12 @@
               [ngTemplateOutletContext]="{ $implicit:row }">
             </ng-container>
 
-            <!-- Default to row data property if no custom template provided -->
+            <!-- No custom template provided -->
             <ng-template #noTemplateFlexTable>
-              <p [innerHTML]="row[col.key] ?? '' | highlightSearch : searchString"></p>
+              <div
+                [innerHTML]="(col.customDataGenerator ? col.customDataGenerator(row) : row[col.key]) ?? '' | highlightSearch : searchString"
+                [ngClass]="getTableColumnCssClasses(col, row)"
+              ></div>
             </ng-template>
 
           </mat-cell>
@@ -110,25 +116,35 @@
       <mat-expansion-panel>
         <!-- Expansion Panel Header -->
         <mat-expansion-panel-header>
-          <ng-container [ngTemplateOutlet]="columnTemplates[columnsToDisplay[0]] || noTemplateExpansionHeader"
-            [ngTemplateOutletContext]="{ $implicit:obj }">
+          <ng-container *ngIf="getTableColumnByKey(columnsToDisplay[0]) as col">
+            <ng-container [ngTemplateOutlet]="columnTemplates[columnsToDisplay[0]] || noTemplateExpansionHeader"
+              [ngTemplateOutletContext]="{ $implicit:obj }">
+            </ng-container>
+            <ng-template #noTemplateExpansionHeader>
+              <div
+                [innerHTML]="(col.customDataGenerator ? col.customDataGenerator(obj) : obj[columnsToDisplay[0]]) ?? '' | highlightSearch : searchString"
+                [ngClass]="getTableColumnCssClasses(col, obj)"
+              ></div>
+            </ng-template>
           </ng-container>
-          <ng-template #noTemplateExpansionHeader>
-            <p [innerHTML]="obj[columnsToDisplay[0]] ?? '' | highlightSearch : searchString"></p>
-          </ng-template>
         </mat-expansion-panel-header>
 
         <!-- Expansion Panel Content -->
         <ng-container *ngFor="let key of columnsToDisplay.slice(1)">
-          <div class="expansion-panel-data">
-            <p class="column-label">{{ getTableColumnHeaderByKey(key) }}</p>
-            <ng-container [ngTemplateOutlet]="columnTemplates[key] || noTemplateExpansionContent"
-              [ngTemplateOutletContext]="{ $implicit:obj }">
-            </ng-container>
-            <ng-template #noTemplateExpansionContent>
-              <p [innerHTML]="obj[key] ?? '' | highlightSearch : searchString"></p>
-            </ng-template>
-          </div>
+          <ng-container *ngIf="getTableColumnByKey(key) as col">
+            <div class="expansion-panel-data">
+              <p class="column-label">{{ col.header }}</p>
+              <ng-container [ngTemplateOutlet]="columnTemplates[key] || noTemplateExpansionContent"
+                [ngTemplateOutletContext]="{ $implicit:obj }">
+              </ng-container>
+              <ng-template #noTemplateExpansionContent>
+                <div
+                  [innerHTML]="(col.customDataGenerator ? col.customDataGenerator(obj) : obj[key]) ?? '' | highlightSearch : searchString"
+                  [ngClass]="getTableColumnCssClasses(col, obj)"
+                ></div>
+              </ng-template>
+            </div>
+          </ng-container>
         </ng-container>
 
         <!-- Expansion Panel Actions -->
